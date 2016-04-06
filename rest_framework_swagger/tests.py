@@ -730,6 +730,38 @@ class DocumentationGeneratorTest(TestCase, DocumentationGeneratorMixin):
         self.assertEqual(1, len(serializer_set))
         self.assertEqual(SerializerFoo, list(serializer_set)[0])
 
+    def test_get_serializer_class_request_data(self):
+        """
+        It should be possible to use request.data parameter in
+        get_serializer_class function
+        """
+
+        class SerializerFoo(serializers.Serializer):
+            pass
+
+        class SerializerBar(serializers.Serializer):
+            pass
+
+        class TestView(APIView):
+            serializer_class = SerializerFoo
+
+            def get_serializer_class(self):
+                if self.request.data.get('foo'):
+                    return SerializerFoo
+                return SerializerBar
+
+        urlparser = UrlParser()
+        url_patterns = patterns(
+            '',
+            url(r'^a/$', TestView.as_view()),
+        )
+        apis = urlparser.get_apis(url_patterns)
+
+        docgen = self.get_documentation_generator()
+        serializer_set = docgen._get_serializer_set(apis)
+        self.assertEqual(1, len(serializer_set))
+        self.assertEqual(SerializerBar, list(serializer_set)[0])
+
     def test_get_serializer_class_for_user(self):
         class SerializerForAnonymous(serializers.Serializer):
             pass

@@ -18,6 +18,7 @@ from django.utils.encoding import smart_text
 import rest_framework
 from rest_framework import viewsets
 from rest_framework.compat import apply_markdown
+from rest_framework.request import Request
 try:
     from rest_framework.fields import CurrentUserDefault
 except ImportError:
@@ -232,7 +233,7 @@ class BaseMethodIntrospector(object):
             view.kwargs = dict()
         if hasattr(self.parent.pattern, 'default_args'):
             view.kwargs.update(self.parent.pattern.default_args)
-        view.request = HttpRequest()
+        view.request = Request(HttpRequest())
         view.request.user = self.user
         view.request.method = self.method
         return view
