@@ -7,7 +7,7 @@ from rest_framework.test import APIRequestFactory
 from rest_framework_swagger import renderers
 from rest_framework_swagger.views import get_swagger_view
 
-from .compat.mock import patch
+from .compat.mock import patch, MagicMock
 
 
 class TestGetSwaggerView(TestCase):
@@ -15,6 +15,31 @@ class TestGetSwaggerView(TestCase):
         self.sut = get_swagger_view
         self.factory = APIRequestFactory()
         self.view_class = self.sut().cls
+
+    def test_custom_schema_generator_used(self):
+        title = 'Vandelay'
+        url = 'https://github.com/marcgibbons/django-rest-swagger'
+        urlconf = 'fizz'
+        patterns = []
+
+        schema_generator = MagicMock()
+        view = self.sut(
+            title=title,
+            url=url,
+            patterns=patterns,
+            urlconf=urlconf,
+            schema_generator_cls=schema_generator
+        )
+
+        request = self.factory.get('/')
+        view(request=request)
+
+        schema_generator.assert_called_once_with(
+            title=title,
+            url=url,
+            patterns=patterns,
+            urlconf=urlconf
+        )
 
     def test_title_and_urlpassed_to_schema_generator(self):
         title = 'Vandelay'

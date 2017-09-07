@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from . import renderers
 
 
-def get_swagger_view(title=None, url=None, patterns=None, urlconf=None):
+def get_swagger_view(title=None, url=None, patterns=None, urlconf=None,
+                     schema_generator_cls=None):
     """
     Returns schema view which renders Swagger/OpenAPI.
     """
@@ -23,7 +24,12 @@ def get_swagger_view(title=None, url=None, patterns=None, urlconf=None):
         ]
 
         def get(self, request):
-            generator = SchemaGenerator(
+            if schema_generator_cls is None:
+                generator_cls = SchemaGenerator
+            else:
+                generator_cls = schema_generator_cls
+
+            generator = generator_cls(
                 title=title,
                 url=url,
                 patterns=patterns,
